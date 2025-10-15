@@ -2,10 +2,10 @@ import { Matrix } from "../Components";
 
 const HierarchyAnalysis = () => {
   return (
-    <container>
+    <section>
       <div>HierarchyAnalysis</div>
-      <Matrix rows={4} cols={5}/>
-    </container>
+      <Matrix rows={4} cols={5} pairwiseComparison={true} result/>
+    </section>
   );
 };
 
