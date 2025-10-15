@@ -1,0 +1,35 @@
+.matrix {
+    width: 100%;
+
+    background-color: rgb(88, 95, 105);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-family: "Cambria", sans-serif;
+    /* border-radius: 8px; */
+}
+
+.matrix thead {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.matrix th, .matrix td {
+    border-radius: 7px;
+}
+
+.matrix tbody tr:nth-child(even) {
+  background:#f1f1fd;
+}
+
+.matrix tbody tr:nth-child(odd) {
+  background:#ffffff; 
+}
+
+
+.matrix th {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.matrix td {
+  /* border-bottom: 1px solid #e5e7eb; */
+}

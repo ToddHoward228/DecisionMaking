@@ -1,14 +1,15 @@
-import { HierarchyAnalysis } from './Pages'
+import { HierarchyAnalysis } from "./Pages";
 import { Routes, Route } from "react-router-dom";
-import './App.css'
-
+import "./App.css";
 
 function App() {
   return (
-    <Routes>
-      <Route path="HAM" element={<HierarchyAnalysis/>}/>
-    </Routes>
-  )
+    <main>
+      <Routes>
+        <Route path="HAM" element={<HierarchyAnalysis />} />
+      </Routes>
+    </main>
+  );
 }
 
-export default App
+export default App;
