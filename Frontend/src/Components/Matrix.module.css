@@ -1,24 +1,49 @@
 .matrix {
+    position: relative;
     width: 100%;
 
     background-color: rgb(88, 95, 105);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     font-family: "Cambria", sans-serif;
     table-layout: fixed;
-    border-collapse: separate;
+    border-collapse:none;
     /* border-radius: 8px; */
+    overflow: hidden;
+    
+}
+
+/* .matrix th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.matrix th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.matrix tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
+.matrix tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+} */
+
+.matrix th, .matrix td:first-child {
+  font-weight: 600;
+  color: white;
+  /* border: 1px solid black; */
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .matrix thead {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
 }
 
 .matrix td:first-child {
-  font-weight: 600;
   background-color: #3b7df6
-  /* letter-spacing: 0.5px; */
 }
+
 
 .matrix tbody tr:nth-child(even) td:not(:first-child) {
   background:#f1f1fd;
@@ -47,6 +72,11 @@
   line-height:inherit;
   caret-color:inherit;
   overflow: hidden;
+}
+
+.issue-message-box {
+    position: absolute;
+    color: rgb(158, 40, 40);
 }
 
 .matrix input::-webkit-outer-spin-button,

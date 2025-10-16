@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import style from "./Matrix.module.css";
+import axios from "axios";
 
 export default (props) => {
-  const [matrix, setMatrix] = useState([
-    [1, 1.43, 2.0, 6.67, 1.25],
-    [0.7, 1, 1.25, 2.0, 0.83],
-    [0.5, 0.8, 1, 1.0, 0.5],
-    [0.15, 0.5, 1.0, 1, 0.2],
-    [0.8, 1.2, 2.0, 5.0, 1],
-  ]);
+  const [matrix, setMatrix] = useState(props.matrix);
+
+  const [coherenceAssessment, setCoherenceAssessment] = useState(0);
+
+  useEffect(() => {
+    axios
+      .post("http://localhost:5158/api/AssessConsistency", {
+        matrix,
+        size: props.size,
+      })
+      .then((res) => {
+        console.log(res.data);
+
+        setCoherenceAssessment(res.data);
+      });
+  }, [matrix]);
 
   function handleMatrixChange(e, y, x) {
     setMatrix((prev) => {
@@ -21,10 +31,12 @@ export default (props) => {
   function handleReciprocalMatrixChange(e, y, x) {
     setMatrix((prev) => {
       const next = prev.map((row) => row.slice());
-      next[y][x] = e.target.value;
+      next[y][x] = e.target.value * 1;
       next[x][y] = Math.round((1 / e.target.value) * 100000) / 100000;
       return next;
     });
+
+    props.updateMatrix(matrix);
   }
 
   function renderMatrix() {
@@ -47,7 +59,7 @@ export default (props) => {
   function renderReciprocalMatrix() {
     return matrix.map((row, i) => (
       <tr key={i}>
-        <td className={style["signatures"]}></td>
+        <td className={style["signatures"]}>{props.headers[i]}</td>
         {row.map((obj, j) => (
           <td key={j}>
             {i == j ? (
@@ -66,20 +78,26 @@ export default (props) => {
   }
 
   return (
-    <table className={style["matrix"]}>
-      <thead>
-        <tr>
-          <th></th>
-          <th>A1</th>
-          <th>A2</th>
-          <th>A3</th>
-          <th>A4</th>
-          <th>A5</th>
-        </tr>
-      </thead>
-      <tbody>
-        {props.pairwiseComparison != true ? renderMatrix() : renderReciprocalMatrix()}
-      </tbody>
-    </table>
+    <div style={{ marginBottom: "2em" }}>
+      <table className={style["matrix"]}>
+        <thead>
+          <tr>
+            <th></th>
+            {props.headers.map((obj, i) => (
+              <th key={i}>{obj}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {props.pairwiseComparison != true ? renderMatrix() : renderReciprocalMatrix()}
+        </tbody>
+      </table>
+      {coherenceAssessment >= 0.1 && (
+        <span className={style["issue-message-box"]}>
+          Оцінка узгодженості перевищує рекомендовану норму, рекомендація - перезаповнити
+          таблицю з нуля!
+        </span>
+      )}
+    </div>
   );
 };
