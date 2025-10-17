@@ -13,6 +13,7 @@ import {
   XAxis,
   Legend,
   Bar,
+  Rectangle,
 } from "recharts";
 
 const HierarchyAnalysis = () => {
@@ -190,9 +191,79 @@ const HierarchyAnalysis = () => {
     );
   };
 
+  function renderDiagrams() {
+    return (
+      <>
+        <Matrix
+          matrix={priorityMatrix}
+          static={true}
+          headers={criteriaMatrixData.headers}
+          labels={alternativeMatrixesData.headers}
+        />
+        <div style={{ height: "800px", width: "100%" }}>
+          <ResponsiveContainer>
+            <PieChart width={400} height={400}>
+              <Pie
+                activeShape={{
+                  fill: "#a7547aff",
+                }}
+                data={rechartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={250}
+                fill="#8884d8"
+                dataKey="value"
+                label={renderCustomizedLabel}>
+                {rechartData?.map((entry, index) => (
+                  <Cell
+                    key={`cell-${entry.value}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ height: "400px", width: "100%", backgroundColor: "white" }}>
+          <ResponsiveContainer>
+            <BarChart
+              width={500}
+              height={300}
+              data={rechartData}
+              layout="vertical"
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" scale="auto" />
+              <Legend />
+              <Tooltip />
+              {criteriaMatrixData.headers.map((obj, i) => (
+                <Bar
+                  key={i}
+                  dataKey={obj}
+                  stackId="a"
+                  fill={COLORS[i % COLORS.length]}
+                  activeBar={<Rectangle stroke="black" />}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </>
+    );
+  }
+
   return (
     <section>
       <div>HierarchyAnalysis</div>
+
       <Matrix
         size={criteriaMatrixData.size}
         headers={criteriaMatrixData.headers}
@@ -230,71 +301,7 @@ const HierarchyAnalysis = () => {
         Send
       </button>
 
-      {priorityMatrix != undefined && (
-        <>
-          <Matrix
-            matrix={priorityMatrix}
-            static={true}
-            headers={criteriaMatrixData.headers}
-            labels={alternativeMatrixesData.headers}
-          />
-          <div style={{ height: "800px", width: "100%" }}>
-            <ResponsiveContainer>
-              <PieChart width={400} height={400}>
-                <Pie
-                  activeShape={{
-                    fill: "#a7547aff",
-                  }}
-                  data={rechartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={250}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={renderCustomizedLabel}>
-                  {rechartData?.map((entry, index) => (
-                    <Cell
-                      key={`cell-${entry.value}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ height: "400px", width: "100%" , backgroundColor: "white"}}>
-            <ResponsiveContainer>
-              <BarChart
-                width={500}
-                height={300}
-                data={rechartData}
-                layout="vertical"
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" scale="auto" />
-                <Legend />
-                <Tooltip />
-                {criteriaMatrixData.headers.map((obj, i) => (
-                  <Bar
-                    key={i}
-                    dataKey={obj}
-                    stackId="a"
-                    fill={COLORS[i % COLORS.length]}
-                  />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </>
-      )}
+      {priorityMatrix != undefined && renderDiagrams()}
     </section>
   );
 };
