@@ -1,7 +1,19 @@
 import { useEffect, useState } from "react";
 import { Matrix } from "../Components";
 import axios from "axios";
-import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  BarChart,
+  CartesianGrid,
+  YAxis,
+  XAxis,
+  Legend,
+  Bar,
+} from "recharts";
 
 const HierarchyAnalysis = () => {
   const [criteriaMatrixData, setCriteriaMatrixData] = useState({
@@ -91,7 +103,9 @@ const HierarchyAnalysis = () => {
 
   const [rechartData, setRechartData] = useState(undefined);
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  const RADIAN = Math.PI / 180;
+  const COLORS = ["#793DF5", "#3D3DF5", "#3D77F5", "#3DB1F5", "#31c9bcff", "#2bc9acff"];
+  const COLORS_THEME1 = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   useEffect(() => {
     console.log(criteriaMatrixData);
@@ -102,15 +116,31 @@ const HierarchyAnalysis = () => {
   }, [alternativeMatrixesData]);
 
   useEffect(() => {
+    console.log(rechartData);
+  }, [rechartData]);
+
+  useEffect(() => {
     if (priorityMatrix != undefined) {
       setRechartData(
         priorityMatrix.map((obj, i) => {
           let sum = 0;
+
           obj.map((element) => {
             sum += element;
           });
 
-          return { value: sum };
+          const scoreValues = Object.fromEntries(
+            obj.map((element, i) => [criteriaMatrixData.headers[i], element])
+          );
+
+          console.log(scoreValues);
+
+          return {
+            value: Math.round(sum * 100000) / 1000,
+            name: alternativeMatrixesData.headers[i],
+            percentage: Math.round(sum * 100000) / 1000 + "%",
+            ...scoreValues,
+          };
         })
       );
     }
@@ -135,6 +165,30 @@ const HierarchyAnalysis = () => {
       };
     });
   }
+
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-(midAngle ?? 0) * RADIAN);
+    const y = cy + radius * Math.sin(-(midAngle ?? 0) * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central">
+        {`${((percent ?? 1) * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
 
   return (
     <section>
@@ -184,26 +238,61 @@ const HierarchyAnalysis = () => {
             headers={criteriaMatrixData.headers}
             labels={alternativeMatrixesData.headers}
           />
-          <div style={{height:"400px", width:"400px"}}>
-<ResponsiveContainer>
-            <PieChart width={400} height={400}>
-              <Pie
-                data={rechartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label>
-                {rechartData?.map((entry, index) => (
-                  <Cell key={`cell-${entry.value}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          <div style={{ height: "800px", width: "100%" }}>
+            <ResponsiveContainer>
+              <PieChart width={400} height={400}>
+                <Pie
+                  activeShape={{
+                    fill: "#a7547aff",
+                  }}
+                  data={rechartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={250}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={renderCustomizedLabel}>
+                  {rechartData?.map((entry, index) => (
+                    <Cell
+                      key={`cell-${entry.value}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          
+          <div style={{ height: "400px", width: "100%" , backgroundColor: "white"}}>
+            <ResponsiveContainer>
+              <BarChart
+                width={500}
+                height={300}
+                data={rechartData}
+                layout="vertical"
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="name" type="category" scale="auto" />
+                <Legend />
+                <Tooltip />
+                {criteriaMatrixData.headers.map((obj, i) => (
+                  <Bar
+                    key={i}
+                    dataKey={obj}
+                    stackId="a"
+                    fill={COLORS[i % COLORS.length]}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </>
       )}
     </section>
