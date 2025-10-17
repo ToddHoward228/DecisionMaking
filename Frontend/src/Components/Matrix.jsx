@@ -8,16 +8,18 @@ export default (props) => {
   const [coherenceAssessment, setCoherenceAssessment] = useState(0);
 
   useEffect(() => {
-    axios
-      .post("http://localhost:5158/api/AssessConsistency", {
-        matrix,
-        size: props.size,
-      })
-      .then((res) => {
-        console.log(res.data);
+    if (props?.static != true) {
+      axios
+        .post("http://localhost:5158/api/AssessConsistency", {
+          matrix,
+          size: props.size,
+        })
+        .then((res) => {
+          setCoherenceAssessment(res.data);
+        });
 
-        setCoherenceAssessment(res.data);
-      });
+      props.updateMatrix(matrix);
+    }
   }, [matrix]);
 
   function handleMatrixChange(e, y, x) {
@@ -31,24 +33,25 @@ export default (props) => {
   function handleReciprocalMatrixChange(e, y, x) {
     setMatrix((prev) => {
       const next = prev.map((row) => row.slice());
-      next[y][x] = e.target.value * 1;
+      next[y][x] = parseFloat(e.target.value);
       next[x][y] = Math.round((1 / e.target.value) * 100000) / 100000;
       return next;
     });
-
-    props.updateMatrix(matrix);
   }
 
   function renderMatrix() {
-    return matrix.map((row, i) => (
+    return matrix?.map((row, i) => (
       <tr key={i}>
-        <td className={style["signatures"]}></td>
-        {row.map((obj, j) => (
+        {props.labels != undefined && (
+          <td className={style["label"]}>{props.labels[i]}</td>
+        )}
+        {row?.map((obj, j) => (
           <td key={j}>
             <input
               type="number"
               value={matrix[i][j]}
-              onChange={(e) => handleMatrixChange(e, i, j)}
+              readOnly={props?.static}
+              //   onChange={(e) => handleMatrixChange(e, i, j)}
             />
           </td>
         ))}
@@ -59,7 +62,9 @@ export default (props) => {
   function renderReciprocalMatrix() {
     return matrix.map((row, i) => (
       <tr key={i}>
-        <td className={style["signatures"]}>{props.headers[i]}</td>
+        {props.labels != undefined && (
+          <td className={style["label"]}>{props.labels[i]}</td>
+        )}
         {row.map((obj, j) => (
           <td key={j}>
             {i == j ? (
@@ -82,8 +87,8 @@ export default (props) => {
       <table className={style["matrix"]}>
         <thead>
           <tr>
-            <th></th>
-            {props.headers.map((obj, i) => (
+              {props.labels != undefined && <th></th>}
+            {props.headers?.map((obj, i) => (
               <th key={i}>{obj}</th>
             ))}
           </tr>

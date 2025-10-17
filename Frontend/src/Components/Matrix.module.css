@@ -28,7 +28,7 @@
     border-bottom-left-radius: 8px;
 } */
 
-.matrix th, .matrix td:first-child {
+.matrix th, .label {
   font-weight: 600;
   color: white;
   /* border: 1px solid black; */
@@ -40,16 +40,16 @@
   background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
-.matrix td:first-child {
+.label{
   background-color: #3b7df6
 }
 
 
-.matrix tbody tr:nth-child(even) td:not(:first-child) {
+.matrix tbody tr:nth-child(even) td:not(.label) {
   background:#f1f1fd;
 }
 
-.matrix tbody tr:nth-child(odd)  td:not(:first-child)  {
+.matrix tbody tr:nth-child(odd)  td:not(.label)  {
   background:#ffffff;
 }
 
