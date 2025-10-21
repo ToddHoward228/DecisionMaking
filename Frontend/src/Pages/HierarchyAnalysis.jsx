@@ -15,20 +15,25 @@ import {
   Bar,
   Rectangle,
 } from "recharts";
+import style from "./HierarchyAnalysis.module.css";
 
 const HierarchyAnalysis = () => {
   const [criteriaMatrixData, setCriteriaMatrixData] = useState({
-    matrix: [
-      [1, 1.43, 2.0, 6.67, 1.25],
-      [0.7, 1, 1.25, 2.0, 0.83],
-      [0.5, 0.8, 1, 1.0, 0.5],
-      [0.15, 0.5, 1.0, 1, 0.2],
-      [0.8, 1.2, 2.0, 5.0, 1],
-    ],
-    headers: ["C1", "C2", "C3", "C4", "C5"],
-    size: 5,
+    matrix: getEmptyMatrix(5),
+    //  [
+    //   [1, 1.43, 2.0, 6.67, 1.25],
+    //   [0.7, 1, 1.25, 2.0, 0.83],
+    //   [0.5, 0.8, 1, 1.0, 0.5],
+    //   [0.15, 0.5, 1.0, 1, 0.2],
+    //   [0.8, 1.2, 2.0, 5.0, 1],
+    // ],
+    criteria: ["C1", "C2", "C3", "C4", "C5"],
   });
 
+  const [addCriterionName, setAddCriterionName] = useState("");
+  const [addAlternativeName, setAddAlternativeName] = useState("");
+  const [criteria, setCriteria] = useState(["C1", "C2", "C3", "C4", "C5"]);
+  const [alternatives, setAlternatives] = useState(["S1", "S2", "S3", "S4"]);
   const [alternativeMatrixesData, setAlternativeMatrixesData] = useState({
     matrixes: [
       [
@@ -94,27 +99,32 @@ const HierarchyAnalysis = () => {
     //     [0, 0, 0, 1],
     //   ],
     // ],
-    headers: ["S1", "S2", "S3", "S4"],
     size: 4,
   });
 
   const [hasCoherenceIssues, setHasCoherenceIssues] = useState(false);
-
   const [priorityMatrix, setPriorityMatrix] = useState(undefined);
-
   const [rechartData, setRechartData] = useState(undefined);
+  const [savedStatesList, setSavedStatesList] = useState();
+  const [goal, setGoal] = useState("");
 
   const RADIAN = Math.PI / 180;
   const COLORS = ["#793DF5", "#3D3DF5", "#3D77F5", "#3DB1F5", "#31c9bcff", "#2bc9acff"];
   const COLORS_THEME1 = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   useEffect(() => {
+    setSavedStatesList(
+      JSON.parse(localStorage.getItem("saved_states"))?.map((obj) => obj?.name)
+    );
+  }, []);
+
+  useEffect(() => {
     console.log(criteriaMatrixData);
   }, [criteriaMatrixData]);
 
-  useEffect(() => {
-    console.log(alternativeMatrixesData);
-  }, [alternativeMatrixesData]);
+  //   useEffect(() => {
+  //     console.log(alternativeMatrixesData);
+  //   }, [alternativeMatrixesData]);
 
   useEffect(() => {
     console.log(rechartData);
@@ -131,14 +141,14 @@ const HierarchyAnalysis = () => {
           });
 
           const scoreValues = Object.fromEntries(
-            obj.map((element, i) => [criteriaMatrixData.headers[i], element])
+            obj.map((element, i) => [criteria[i], element])
           );
 
           console.log(scoreValues);
 
           return {
             value: Math.round(sum * 100000) / 1000,
-            name: alternativeMatrixesData.headers[i],
+            name: alternatives[i],
             percentage: Math.round(sum * 100000) / 1000 + "%",
             ...scoreValues,
           };
@@ -165,6 +175,106 @@ const HierarchyAnalysis = () => {
         matrixes: newAlternatives,
       };
     });
+  }
+
+  function handleSaveState() {
+    let prevState = JSON.parse(localStorage.getItem("saved_states")) ?? [];
+
+    const state = {
+      name: goal,
+      criteria: criteria,
+      criteriaMatrixData: criteriaMatrixData,
+      alternatives: alternatives,
+      alternativeMatrixesData: alternativeMatrixesData,
+    };
+
+    const foundIndex = prevState.findIndex((obj) => obj.name === goal);
+
+    if (foundIndex === -1) {
+      prevState.push(state);
+    } else {
+      alert("You already have saved state with this goal.");
+      prevState = prevState.with(foundIndex, state);
+    }
+
+    localStorage.setItem("saved_states", JSON.stringify(prevState));
+
+    setSavedStatesList(prevState.map((obj) => obj?.name));
+  }
+
+  function handleLoadState(stateName) {
+    console.log("i'm entering");
+
+    const currentState = JSON.parse(localStorage.getItem("saved_states"));
+
+    const foundElement = currentState.find((obj) => obj.name == stateName);
+
+    console.log(foundElement);
+
+    setCriteria(foundElement.criteria);
+    setAlternatives(foundElement.alternatives);
+    setCriteriaMatrixData(foundElement.criteriaMatrixData);
+    setAlternativeMatrixesData(foundElement.alternativeMatrixesData);
+  }
+
+  function handleAddCriterion() {
+    const next = [...criteria, addCriterionName];
+
+    console.log(next);
+
+    setCriteria(next);
+
+    setCriteriaMatrixData((prev) => ({
+      ...prev,
+      size: next.length,
+      matrix: getEmptyMatrix(next.length),
+    }));
+
+    setAlternativeMatrixesData((prev) => ({
+      ...prev,
+      matrixes: [...next.map((obj) => getEmptyMatrix(alternatives.length))],
+    }));
+  }
+
+  function handleDeleteCriterion(index) {
+    const next = criteria.filter((_, i) => i !== index);
+
+    console.log(next);
+
+    setCriteria(next);
+
+    setCriteriaMatrixData((prev) => ({
+      ...prev,
+      size: next.length,
+      matrix: getEmptyMatrix(next.length),
+    }));
+
+    setAlternativeMatrixesData((prev) => ({
+      ...prev,
+      matrixes: [...next.map(() => getEmptyMatrix(alternatives.length))],
+    }));
+  }
+
+  function handleAddAlternative() {
+    const next = [...alternatives, addAlternativeName];
+
+    setAlternatives(next);
+
+    setAlternativeMatrixesData((prev) => ({
+      ...prev,
+      matrixes: [...criteria.map(() => getEmptyMatrix(next.length))],
+    }));
+  }
+
+  function handleDeleteAlternative(index) {
+    const next = alternatives.filter((_, i) => i !== index);
+
+    setAlternatives(next);
+
+    setAlternativeMatrixesData((prev) => ({
+      ...prev,
+      matrixes: [...criteria.map(() => getEmptyMatrix(next.length))],
+    }));
   }
 
   const renderCustomizedLabel = ({
@@ -197,8 +307,8 @@ const HierarchyAnalysis = () => {
         <Matrix
           matrix={priorityMatrix}
           static={true}
-          headers={criteriaMatrixData.headers}
-          labels={alternativeMatrixesData.headers}
+          headers={criteria}
+          labels={alternatives}
         />
         <div style={{ height: "800px", width: "100%" }}>
           <ResponsiveContainer>
@@ -244,7 +354,7 @@ const HierarchyAnalysis = () => {
               <YAxis dataKey="name" type="category" scale="auto" />
               <Legend />
               <Tooltip />
-              {criteriaMatrixData.headers.map((obj, i) => (
+              {criteria.map((obj, i) => (
                 <Bar
                   key={i}
                   dataKey={obj}
@@ -262,36 +372,100 @@ const HierarchyAnalysis = () => {
 
   return (
     <section>
-      <div>HierarchyAnalysis</div>
+      <h1>HierarchyAnalysis</h1>
 
-      <Matrix
-        size={criteriaMatrixData.size}
-        headers={criteriaMatrixData.headers}
-        labels={criteriaMatrixData.headers}
-        matrix={criteriaMatrixData.matrix}
-        updateMatrix={handleUpdateCriteriaMatrix}
-        pairwiseComparison={true}
+      <input
+        type="text"
+        value={goal}
+        placeholder="Enter your goal..."
+        onChange={(e) => {
+          setGoal(e.target.value);
+        }}
       />
 
-      {alternativeMatrixesData.matrixes.map((obj, i) => (
+      <div className={style["container"]}>
+        <div>
+          <input
+            type="text"
+            value={addCriterionName}
+            onChange={(e) => {
+              setAddCriterionName(e.target.value);
+            }}
+          />
+          <button onClick={handleAddCriterion}>Add Critetia</button>
+        </div>
+        <div className={style["container"]}>
+          {criteria.map((obj, i) => (
+            <div key={i}>
+              <div className={style["element"]}>{obj}</div>
+              <button
+                onClick={() => {
+                  handleDeleteCriterion(i);
+                }}>
+                Delete
+              </button>
+              <button>Update</button>
+            </div>
+          ))}
+        </div>
+        <div>
+          <input
+            type="text"
+            value={addAlternativeName}
+            onChange={(e) => {
+              setAddAlternativeName(e.target.value);
+            }}
+          />
+          <button onClick={handleAddAlternative}>Add Alternative</button>
+        </div>
+        <div className={style["container"]}>
+          {alternatives.map((obj, i) => (
+            <div key={i}>
+              <div className={style["element"]}>{obj}</div>
+              <button
+                onClick={() => {
+                  handleDeleteAlternative(i);
+                }}>
+                Delete
+              </button>
+              <button>Update</button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={style["container"]}>
         <Matrix
-          key={i}
-          size={alternativeMatrixesData.size}
-          headers={alternativeMatrixesData.headers}
-          labels={alternativeMatrixesData.headers}
-          matrix={obj}
-          updateMatrix={(matrix) => handleUpdateAlternativeMatrix(matrix, i)}
+          size={criteria.length}
+          headers={criteria}
+          labels={criteria}
+          matrix={criteriaMatrixData.matrix}
+          updateMatrix={handleUpdateCriteriaMatrix}
           pairwiseComparison={true}
         />
-      ))}
+      </div>
+
+      <div className={style["container"]}>
+        {alternativeMatrixesData.matrixes.map((obj, i) => (
+          <Matrix
+            key={i}
+            size={alternatives.length}
+            headers={alternatives}
+            labels={alternatives}
+            matrix={obj}
+            updateMatrix={(matrix) => handleUpdateAlternativeMatrix(matrix, i)}
+            pairwiseComparison={true}
+          />
+        ))}
+      </div>
 
       <button
         onClick={() => {
           axios
             .post("http://localhost:5158/api/decision", {
-              criteriaCount: criteriaMatrixData.size,
+              criteriaCount: criteria.length,
               criteriaMatrix: criteriaMatrixData.matrix,
-              alternativesCount: alternativeMatrixesData.size,
+              alternativesCount: alternatives.length,
               alternativeMatrixes: alternativeMatrixesData.matrixes,
             })
             .then((res) => {
@@ -300,10 +474,23 @@ const HierarchyAnalysis = () => {
         }}>
         Send
       </button>
+      <button onClick={handleSaveState}>Save State</button>
+      {savedStatesList?.map((obj, i) => (
+        <div key={i} className={style["container"]}>
+          <div className={style["element"]}>{obj}</div>
+          <button onClick={() => handleLoadState(obj)}>Load</button>
+        </div>
+      ))}
 
       {priorityMatrix != undefined && renderDiagrams()}
     </section>
   );
 };
+
+function getEmptyMatrix(size) {
+  return Array.from({ length: size }, (_, i) =>
+    Array.from({ length: size }, (_, j) => (i == j ? 1 : 0))
+  );
+}
 
 export default HierarchyAnalysis;

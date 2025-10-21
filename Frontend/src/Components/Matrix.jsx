@@ -1,46 +1,69 @@
 import { useEffect, useState } from "react";
 import style from "./Matrix.module.css";
 import axios from "axios";
+import { flushSync } from "react-dom";
 
 export default (props) => {
   const [matrix, setMatrix] = useState(props.matrix);
 
   const [coherenceAssessment, setCoherenceAssessment] = useState(0);
 
-  useEffect(() => {
-    if (props?.static != true) {
-      axios
-        .post("http://localhost:5158/api/AssessConsistency", {
-          matrix,
-          size: props.size,
-        })
-        .then((res) => {
-          setCoherenceAssessment(res.data);
-        });
+  // useEffect(() => {
+  //   if (props?.static != true) {
+  //     axios
+  //       .post("http://localhost:5158/api/AssessConsistency", {
+  //         matrix,
+  //         size: props.size,
+  //       })
+  //       .then((res) => {
+  //         setCoherenceAssessment(res.data);
+  //       });
 
-      props.updateMatrix(matrix);
-    }
-  }, [matrix]);
+  //     props.updateMatrix(matrix);
+  //   }
+  // }, [matrix]);
 
-  function handleMatrixChange(e, y, x) {
-    setMatrix((prev) => {
-      const next = prev.map((row) => row.slice());
-      next[y][x] = e.target.value;
-      return next;
-    });
-  }
+  // function handleMatrixChange(e, y, x) {
+  //   setMatrix((prev) => {
+  //     const next = prev.map((row) => row.slice());
+  //     next[y][x] = e.target.value;
+  //     return next;
+  //   });
+  // }
+
+  // function handleMatrixChange() {
+  //   axios
+  //     .post("http://localhost:5158/api/AssessConsistency", {
+  //       matrix,
+  //       size: props.size,
+  //     })
+  //     .then((res) => {
+  //       setCoherenceAssessment(res.data);
+  //     });
+
+  //   props.updateMatrix(matrix);
+  // }
 
   function handleReciprocalMatrixChange(e, y, x) {
-    setMatrix((prev) => {
-      const next = prev.map((row) => row.slice());
-      next[y][x] = parseFloat(e.target.value);
-      next[x][y] = Math.round((1 / e.target.value) * 100000) / 100000;
-      return next;
-    });
+
+    const updated = props.matrix.map((row) => row.slice());
+    updated[y][x] = parseFloat(e.target.value);
+    updated[x][y] = Math.round((1 / e.target.value) * 100000) / 100000;
+
+    axios
+      .post("http://localhost:5158/api/AssessConsistency", {
+        matrix: updated,
+        size: props.size,
+      })
+      .then((res) => {
+        setCoherenceAssessment(res.data);
+      });
+
+    props.updateMatrix(updated);
   }
 
   function renderMatrix() {
-    return matrix?.map((row, i) => (
+    return props.matrix?.map((row, i) => (
       <tr key={i}>
         {props.labels != undefined && (
           <td className={style["label"]}>{props.labels[i]}</td>
@@ -49,7 +72,7 @@ export default (props) => {
           <td key={j}>
             <input
               type="number"
-              value={matrix[i][j]}
+              value={props.matrix[i][j]}
               readOnly={props?.static}
               //   onChange={(e) => handleMatrixChange(e, i, j)}
             />
@@ -60,7 +83,7 @@ export default (props) => {
   }
 
   function renderReciprocalMatrix() {
-    return matrix.map((row, i) => (
+    return props.matrix.map((row, i) => (
       <tr key={i}>
         {props.labels != undefined && (
           <td className={style["label"]}>{props.labels[i]}</td>
@@ -72,7 +95,7 @@ export default (props) => {
             ) : (
               <input
                 type="number"
-                value={matrix[i][j]}
+                value={props.matrix[i][j]}
                 onChange={(e) => handleReciprocalMatrixChange(e, i, j)}
               />
             )}
@@ -87,7 +110,7 @@ export default (props) => {
       <table className={style["matrix"]}>
         <thead>
           <tr>
-              {props.labels != undefined && <th></th>}
+            {props.labels != undefined && <th></th>}
             {props.headers?.map((obj, i) => (
               <th key={i}>{obj}</th>
             ))}

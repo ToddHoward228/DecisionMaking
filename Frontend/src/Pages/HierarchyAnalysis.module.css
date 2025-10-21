@@ -1,0 +1,16 @@
+.container {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+.element {
+    display: inline-block;
+    background-color: white;
+    margin: 0.5em;
+    padding: 0.25em;
+    width: 15vw;
+    border: 1px solid silver;
+    border-radius: 0.5em;
+}
