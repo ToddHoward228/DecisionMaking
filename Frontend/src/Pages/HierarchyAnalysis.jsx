@@ -109,7 +109,17 @@ const HierarchyAnalysis = () => {
   const [goal, setGoal] = useState("");
 
   const RADIAN = Math.PI / 180;
-  const COLORS = ["#793DF5", "#3D3DF5", "#3D77F5", "#3DB1F5", "#31c9bcff", "#2bc9acff"];
+  const COLORS =
+      [
+          "#793DF5", "#3D3DF5", "#3D77F5", "#3DB1F5",
+          "#31c9bcff", "#2bc9acff"
+      ];
+  const COLORS10 =
+      [
+          "#6D39FA", "#4E44E0", "#313FDB", "#174DF6",
+          "#0066F5", "#0093F5", "#00BCF5", "#00DCF5",
+          "#00F5E9", "#25DBB4"
+      ];
   const COLORS_THEME1 = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   useEffect(() => {

@@ -1,0 +1,6 @@
+[
+  {
+    "name": "laptop",
+    "criteria": ["CPU", "GPU", "RAM", "Storage", "Efficiency"]
+  }
+]
